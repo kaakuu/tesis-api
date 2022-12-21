@@ -3,7 +3,7 @@ import { getAllAssets } from '../../utils/CAUtil';
 import  registerRouter from './register';
 import  fileRouter from './file';
 class AppRouter{
-    router : Router;
+    router: any;
 
     constructor(){
         this.router = Router();
@@ -15,7 +15,7 @@ class AppRouter{
         this.router.use('/file', fileRouter);
         this.router.use('/get-all', getAllAssets);
         this.router.use('/enroll', registerRouter);
-        this.router.use('/ping', ( req, res ) => {
+        this.router.use('/ping', ( _: any , res: any ) => {
             res.status(200).send('Server connected!!!');
         });
     }

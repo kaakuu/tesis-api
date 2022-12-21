@@ -15,9 +15,10 @@ const CryptoJS = require("crypto-js");
 const path = require("path");
 const fs = require("fs");
 const axios_1 = require("axios");
+const media_service_1 = require("../services/media.service");
 // const adminUserId = 'administrator';
 const adminUserPasswd = 'adminpw';
-const caCertPath = path.resolve(__dirname, '..', '..', '..', '..', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'ca', 'ca.org1.example.com-cert.pem');
+const caCertPath = path.resolve(__dirname, '..', '..', '..', 'fabric-samples', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'ca', 'ca.org1.example.com-cert.pem');
 const caCert = fs.readFileSync(caCertPath, 'utf8');
 /**
  *
@@ -64,7 +65,7 @@ const enrollAdmin = async (wallet, caClient, orgMspId, adminUserId) => {
 const registerUser = async (req, res) => {
     console.log(JSON.stringify(req.body, null, 2));
     const walletPath = path.join(__dirname, 'wallet');
-    const wallet = await AppUtil_1.buildWallet(walletPath);
+    const wallet = await (0, AppUtil_1.buildWallet)(walletPath);
     const ORG_ID = req.body.org;
     const USER_ID = req.body.user;
     const role = req.body.roles;
@@ -132,10 +133,18 @@ const registerAndEnrollUser = async (wallet, caClient, userId, role, affiliation
 };
 const uploadFile = async (req, res) => {
     try {
+        console.log('ACAAAAAAAAAAAA');
         const userId = req.query.user_id;
         const fileLoaded = req.file;
+        console.log(fileLoaded);
+        try {
+            await (0, media_service_1.createFile)(fileLoaded, req.query.filename);
+        }
+        catch (err) {
+            console.log(err);
+        }
         const networkConnection = new Network_connection_1.NetworkConnection();
-        const wallet = await AppUtil_1.buildWallet(networkConnection.walletPath);
+        const wallet = await (0, AppUtil_1.buildWallet)(networkConnection.walletPath);
         const identity = await wallet.get(userId);
         if (!identity) {
             console.log(`An identity for the user ${userId} does not exist in the wallet`);
@@ -153,8 +162,14 @@ const uploadFile = async (req, res) => {
         const sigValueBase64 = Buffer.from(sigValueHex, 'hex').toString('base64');
         console.log("Signature: " + sigValueBase64);
         networkConnection.startConnection().then(async (response) => {
-            await response.contract.submitTransaction('CreateAsset', hashToAction, sigValueBase64, new Date().toISOString(), userId, 'API');
+            await response.contract.submitTransaction('CreateAsset', hashToAction, sigValueBase64, new Date().toISOString(), userId, fileLoaded.mimetype);
             console.log('Transacciòn ejecutada correctamente');
+            try {
+                await (0, media_service_1.createFile)(fileLoaded, req.query.filename);
+            }
+            catch (err) {
+                console.log(err);
+            }
             await response.gateway.disconnect();
             res.status(200).send('Transacciòn ejecutada correctamente');
         }).catch(err => {
@@ -173,7 +188,7 @@ const validateDocumentOnChain = async (req, res) => {
         const userId = req.query.user_id;
         const fileLoaded = req.file;
         const networkConnection = new Network_connection_1.NetworkConnection();
-        const wallet = await AppUtil_1.buildWallet(networkConnection.walletPath);
+        const wallet = await (0, AppUtil_1.buildWallet)(networkConnection.walletPath);
         const identity = await wallet.get(userId);
         if (!identity) {
             console.log(`An identity for the user ${userId} does not exist in the wallet`);
@@ -206,11 +221,13 @@ const validateDocumentOnChain = async (req, res) => {
             return res.status(200).send({ result: JSON.parse(result.toString()), msg: 'Transacciòn ejecutada correctamente' });
         }).catch(err => {
             console.log(err);
+            fs.unlinkSync(`./${fileLoaded.destination}${fileLoaded.filename}`);
             return res.status(500).send({ err, msg: 'El archivo que proporcionó es inválido.' });
         });
     }
     catch (err) {
         console.log(err);
+        fs.unlinkSync(`./${req.file.destination}${req.file.filename}`);
         return res.status(500).send({ err, msg: 'El archivo que proporcionó es inválido.' });
     }
 };
@@ -229,7 +246,7 @@ const getAllAssets = (req, res) => {
 exports.getAllAssets = getAllAssets;
 const login = (req, res) => {
     const url = "http://localhost:8080/auth/login";
-    axios_1.default({
+    (0, axios_1.default)({
         method: 'post',
         url: url,
         data: req.body

@@ -174,8 +174,11 @@ import apiRoutes from './routes';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
+import * as dotenv from "dotenv";
 
 const app = express();
+
+dotenv.config();
 
 app.use( cors() );
 app.use( bodyParser.json() );

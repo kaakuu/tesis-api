@@ -2,6 +2,7 @@ import * as http from 'http';
 import app from '../app';
 import * as Debug from 'debug';
 import { AddressInfo } from 'net';
+import { connectMongo } from '../bin/mongoose';
 
 const debug = Debug("Hyperledger:server");
 
@@ -42,6 +43,9 @@ const onError = ( error: any ) => {
             throw error;
     }
 }
+
+connectMongo()
+
 
 const onListening = ()=> {
     const addr = server.address();

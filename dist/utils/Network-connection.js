@@ -23,9 +23,9 @@ class NetworkConnection {
         // a user that has been verified.
         const gateway = new fabric_network_1.Gateway();
         // build an in memory object with the network configuration (also known as a connection profile)
-        const ccp = AppUtil_1.buildCCPOrg1();
+        const ccp = (0, AppUtil_1.buildCCPOrg1)();
         // setup the wallet to hold the credentials of the application user
-        const wallet = await AppUtil_1.buildWallet(this.walletPath);
+        const wallet = await (0, AppUtil_1.buildWallet)(this.walletPath);
         const gatewayOpts = {
             wallet,
             identity: this.org1UserId,

@@ -1,2 +1,1 @@
-import { Router } from 'express';
-export declare const appRouter: Router;
+export declare const appRouter: any;

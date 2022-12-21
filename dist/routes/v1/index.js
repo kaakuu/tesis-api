@@ -7,14 +7,14 @@ const register_1 = require("./register");
 const file_1 = require("./file");
 class AppRouter {
     constructor() {
-        this.router = express_1.Router();
+        this.router = (0, express_1.Router)();
         this._init();
     }
     _init() {
         this.router.use('/file', file_1.default);
         this.router.use('/get-all', CAUtil_1.getAllAssets);
         this.router.use('/enroll', register_1.default);
-        this.router.use('/ping', (req, res) => {
+        this.router.use('/ping', (_, res) => {
             res.status(200).send('Server connected!!!');
         });
     }

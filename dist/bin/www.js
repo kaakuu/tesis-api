@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http = require("http");
 const app_1 = require("../app");
 const Debug = require("debug");
+const mongoose_1 = require("../bin/mongoose");
 const debug = Debug("Hyperledger:server");
 const port = "8000";
 app_1.default.set("port", port);
@@ -32,6 +33,7 @@ const onError = (error) => {
             throw error;
     }
 };
+(0, mongoose_1.connectMongo)();
 const onListening = () => {
     const addr = server.address();
     const bind = typeof addr === 'string' ? 'pipe' + addr : 'port' + addr.port;

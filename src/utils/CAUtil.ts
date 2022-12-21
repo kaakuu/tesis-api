@@ -14,11 +14,12 @@ import * as CryptoJS from 'crypto-js';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
+import { createFile } from '../services/media.service';
 
 // const adminUserId = 'administrator';
 const adminUserPasswd = 'adminpw';
 
-const caCertPath = path.resolve(__dirname, '..', '..', '..', '..', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'ca', 'ca.org1.example.com-cert.pem');
+const caCertPath = path.resolve(__dirname, '..', '..', '..', 'fabric-samples', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'ca', 'ca.org1.example.com-cert.pem');
 const caCert = fs.readFileSync(caCertPath, 'utf8');
 
 /**
@@ -153,8 +154,10 @@ const registerAndEnrollUser = async ( wallet : Wallet, caClient: FabricCAService
 
 const uploadFile = async( req: any, res : any ) => {
     try{
+        console.log('ACAAAAAAAAAAAA')
         const userId = req.query.user_id;
         const fileLoaded = req.file;
+        console.log(fileLoaded)       
         
         const networkConnection = new NetworkConnection();
         
@@ -182,8 +185,13 @@ const uploadFile = async( req: any, res : any ) => {
         console.log("Signature: " + sigValueBase64);
 
         networkConnection.startConnection().then(async response => {
-            await response.contract.submitTransaction('CreateAsset', hashToAction, sigValueBase64, new Date().toISOString(), userId, 'API');
+            await response.contract.submitTransaction('CreateAsset', hashToAction, sigValueBase64, new Date().toISOString(), userId, fileLoaded.mimetype);
             console.log('Transacciòn ejecutada correctamente')
+            try {
+                await createFile(fileLoaded, req.query.filename);            
+            } catch (err) {
+                console.log(err)
+            }
             await response.gateway.disconnect();
             res.status(200).send('Transacciòn ejecutada correctamente');
 
@@ -250,12 +258,14 @@ const validateDocumentOnChain = async( req: any, res : any ) => {
 
         }).catch( err =>{
             console.log(err);
+            fs.unlinkSync(`./${fileLoaded.destination}${fileLoaded.filename}`);
             return res.status(500).send({err, msg: 'El archivo que proporcionó es inválido.'});
 
         }); 
 
     }catch( err ){
         console.log(err);
+        fs.unlinkSync(`./${req.file.destination}${req.file.filename}`);
         return res.status(500).send({err, msg: 'El archivo que proporcionó es inválido.'});
     }
 }
